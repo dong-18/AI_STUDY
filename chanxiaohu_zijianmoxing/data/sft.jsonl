@@ -1,0 +1,35 @@
+{"question": "居家办公指南适用于什么场景？", "answer": "本指南仅适用于全员居家办公时使用，且需要运维提前开通对应权限。"}
+{"question": "哪些岗位禁止远程连接到公司？", "answer": "职能人员、产品岗和美术岗禁止远程连接到公司。"}
+{"question": "开发和测试人员居家办公时可以随意远程连接公司吗？", "answer": "不可以。开发和测试相关人员非必要不远程，如确实需要，必须说明原因。"}
+{"question": "居家办公时飞书、企业微信、OSS 和外网 GM 应该怎么使用？", "answer": "飞书、企业微信、OSS、外网 GM 等软件或网站直接在自家电脑上使用即可。"}
+{"question": "居家办公期间 SVN 是否支持外网访问？", "answer": "支持。居家办公期间 SVN 会开放外网访问权限，相关人员只需切换到对应地址即可。"}
+{"question": "居家办公时 SVN 应切换到哪个地址？", "answer": "正常应切换到 $http://locnet.chanyou001.com:18100/repos2/$ 这个地址。"}
+{"question": "服务器端 SVN 路径示例是什么？", "answer": "服务器端示例路径为 $http://locnet.chanyou001.com:18100/repos2/MaJiang/Server/PlatEvent$。"}
+{"question": "策划配置的 SVN 路径示例有哪些？", "answer": "例如 $http://locnet.chanyou001.com:18100/repos2/MaJiang/策划/公共部分/配置文件$ 和 $http://locnet.chanyou001.com:18100/repos2/MaJiang/策划/ImpFiles/GameConfig$。"}
+{"question": "在家如何使用内网 GM？", "answer": "可以在自家电脑上配置 hosts：$106.75.169.34 locgm.365you.com$，配置后即可像公司一样使用内网 GM。"}
+{"question": "hosts 文件通常位于哪里？", "answer": "hosts 文件位于 $C:\\Windows\\System32\\drivers\\etc$。"}
+{"question": "如果不想配置 hosts，如何直接访问内网 GM？", "answer": "可以直接访问 $https://locgm.zgverse.com:23182$，这样就不需要配置 hosts。"}
+{"question": "居家办公期间 wiki 可以在家访问吗？", "answer": "可以。居家办公期间 wiki 是开放的，在家可通过 $https://wiki.zgverse.com:23182$ 访问。"}
+{"question": "客户端人员居家办公时是否建议远程到公司开发？", "answer": "不建议。客户端人员应尽量在自家电脑上开发，非必要不远程。"}
+{"question": "客户端人员在家连接内网环境调试需要做什么？", "answer": "只需配置 hosts 即可。原来指向内网 $10.10.1.40$ 或 $10.10.1.67$ 的域名，改为指向 $106.75.169.34$；也可以直接把 PC 的 DNS 指向 $106.75.169.34$。"}
+{"question": "Unity 客户端开发居家期间连接内网 consvr 应使用什么地址？", "answer": "居家期间，Unity 客户端应改为连接 $106.75.169.34:30022$，以对应到内网 consvr。"}
+{"question": "服务器人员居家办公的开发原则是什么？", "answer": "原则上服务器人员也应在家里电脑上本地开发，不要远程到公司。"}
+{"question": "居家办公期间 Git 的外网访问地址是什么？", "answer": "Git 的外网访问地址为 $https://git.zgverse.com:23182$。"}
+{"question": "居家办公时 GitLab Runner 打包是否仍然有效？", "answer": "有效，并且打包仍然会部署到此前的内网机器上。"}
+{"question": "服务器人员如需连接内网机器操作，应如何处理？", "answer": "可以在家里电脑上通过 CRT 连接某个跳板机，再由跳板机访问 $10.10.1.70$，详情可联系 reuben。"}
+{"question": "居家办公时如何连接内网数据库？", "answer": "可以直接通过 Navicat 连接内网数据库，主机为 $locnet.chanyou001.com$，端口为 $30024$，对应的是内网数据库。"}
+{"question": "在家办公时还能远程 debug 内网环境代码吗？", "answer": "不能。自家电脑无法再远程 debug 内网环境代码，如需调试，应在本地启动业务，数据库连接指定地址，再让前端连接自家电脑的 IP 和端口。"}
+{"question": "产品人员居家办公时可以远程到公司吗？", "answer": "不可以，产品人员禁止远程到公司。"}
+{"question": "产品人员居家办公如果要修改 SVN 配置，应该怎么做？", "answer": "可以直接在家里的电脑上进行 check 和修改配置。"}
+{"question": "测试人员居家办公时是否应尽量避免远程连接公司环境？", "answer": "是的，测试人员非必要不走远程连接公司环境。"}
+{"question": "测试人员使用手机连接内网测试环境时，应如何配置？", "answer": "将手机的 DNS 配置成 $106.75.169.34$ 即可。"}
+{"question": "测试人员使用 PC 连接内网时，应如何配置？", "answer": "可参照客户端人员配置 hosts，或者直接将 PC 的 DNS 指向 $106.75.169.34$。"}
+{"question": "测试人员操作内网 GM 时应参考哪部分说明？", "answer": "其他如内网 GM 等操作，参照前文相关说明即可。"}
+{"question": "测试人员如果要修改内网数据库数据，应该找谁？", "answer": "原则上应直接询问对应的后端开发，由对应服务器人员操作；如有必要，也可使用 Navicat 连接数据库，主机为 $locnet.chanyou001.com$，端口为 $30024$。"}
+{"question": "测试人员对上述操作有疑问时可以联系谁？", "answer": "如有疑问可联系 haison。"}
+{"question": "美术人员居家办公时能否远程连接公司？", "answer": "不能，美术人员禁止远程连接到公司。"}
+{"question": "美术人员居家办公需要掌握什么操作？", "answer": "需要了解 SVN 的使用，并在自家电脑上 check 资源。"}
+{"question": "居家办公时是否可以使用外网测试服？", "answer": "可以。如果确实需要，可以使用外网环境进行测试。"}
+{"question": "目前麻将项目选取了哪个外网测试服？", "answer": "目前麻将这边选取了 831 服作为外网测试服。"}
+{"question": "外网环境的代码和配置问题应联系谁处理？", "answer": "具体的外网环境代码、配置等问题，应联系对应后台人员处理。"}
+{"question": "客户端测试外网服时还需要像以前一样打固定 consvr IP 端口的包吗？", "answer": "不需要。现在测试人员可以通过 GM 配置指定 userid 直接进入 831 服，更加方便。"}
