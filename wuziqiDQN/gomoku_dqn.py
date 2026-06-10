@@ -335,7 +335,7 @@ class DQNAgent:
 
         # 不需要梯度
         with torch.no_grad():
-            # 计算当前状态下每个动作的 Q 值 为什么用policy
+            # 计算当前状态下每个动作的 Q 值
             q_values = self.policy_net(state_tensor).squeeze(0).cpu().numpy()
 
         # 把非法动作的 Q 值设为极小
@@ -480,7 +480,7 @@ def train_self_play(
             agent.update_epsilon(global_step)
 
             # 可选：每一步都尝试训练一次
-            loss = agent.train_step(replay_buffer, batch_size=batch_size)
+            #loss = agent.train_step(replay_buffer, batch_size=batch_size)
 
         # 对局结束后获取胜者
         winner = env.winner
@@ -507,7 +507,7 @@ def train_self_play(
 
             # 每加入一条经验，就训练一步
             agent.train_step(replay_buffer, batch_size=batch_size)
-
+        print(episode)
         # 每 50 局打印一次训练信息
         if (episode + 1) % 50 == 0:
             print(
