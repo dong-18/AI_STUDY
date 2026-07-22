@@ -514,7 +514,7 @@ def train_self_play(
                 f"Episode {episode + 1}/{episodes}, "
                 f"Epsilon: {agent.epsilon:.4f}, "
                 f"Buffer: {len(replay_buffer)}"
-            )
+            )越远的收益和近处的-1，两个五子棋
 
         # 每 500 局保存一次模型
         if (episode + 1) % 500 == 0:

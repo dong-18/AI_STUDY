@@ -5,7 +5,7 @@ texts = []  # 初始化文本列表，用来收集所有文本
 
 with open("data/pretrain.txt", "r", encoding="utf-8") as f:  # 打开预训练文本
     for line in f:  # 遍历每一行
-        line = line.strip()  # 去掉首尾空白
+        #line = line.strip()  # 去掉首尾空白
         if line:  # 如果这一行非空
             texts.append(line)  # 加入文本列表
 
