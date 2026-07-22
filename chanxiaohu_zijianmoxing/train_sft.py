@@ -109,7 +109,7 @@ def main():  # 主函数
     optimizer = optim.AdamW(model.parameters(), lr=1e-4)  # 创建 SFT 优化器
 
     model.train()  # 切换到训练模式
-    for epoch in range(100):  # 训练 10 个 epoch
+    for epoch in range(200):  # 训练 10 个 epoch
         total_loss = 0.0  # 初始化总 loss
 
         for step, batch in enumerate(loader):  # 遍历每个 batch

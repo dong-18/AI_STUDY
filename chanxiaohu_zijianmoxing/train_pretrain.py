@@ -9,7 +9,7 @@ class PretrainDataset(Dataset):  # 定义预训练数据集
     def __init__(self, text, tokenizer, max_seq_len=128):  # 构造函数
         self.tokenizer = tokenizer  # 保存 tokenizer
         self.max_seq_len = max_seq_len  # 保存最大序列长度
-
+# "合起来做出网页，模型反向传播"
         ids = tokenizer.encode(text, add_bos=True, add_eos=True)  # 把整段文本编码成 token id
         self.samples = []  # 初始化样本列表
 

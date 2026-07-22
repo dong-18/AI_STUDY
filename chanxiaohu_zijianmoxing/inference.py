@@ -29,7 +29,7 @@ def main():  # 主函数
     ckpt_path = "sft_ckpt.pt"  # 默认使用 SFT 模型，也可以改成 dpo_ckpt.pt
     tokenizer, model = load_model(ckpt_path, device)  # 加载模型和 tokenizer
 
-    question = "哪些岗位禁止远程连接到公司？"  # 你可以改这里测试不同问题
+    question = "公司禁止员工做哪些损害公司事情？"  # 你可以改这里测试不同问题
     prompt = f"{SYSTEM_PROMPT}\n用户：{question}\n助手："  # 构造输入 prompt
 
     input_ids = tokenizer.encode(prompt, add_bos=True, add_eos=False)  # 编码 prompt
