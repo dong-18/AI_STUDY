@@ -31,26 +31,73 @@ OUTPUT_DIR = "./output/company-qwen-lora"
 # GTX 1060 3GB 建议从 384 或 512 开始
 MAX_LENGTH = 512
 
+# SYSTEM_PROMPT = """你是公司制度问答助手。
+#
+# 回答要求：
+# 1. 只能根据用户提供的制度资料回答。
+# 2. 不得编造制度中没有的金额、日期、条件或流程。
+# 3. 回答时尽量说明制度名称或条款。
+# 4. 如果资料中没有答案，明确说明“现有制度资料中没有找到相关规定”。
+# 5. 回答应准确、简洁，不要加入与问题无关的内容。
+# """
 SYSTEM_PROMPT = """你是公司制度问答助手。
 
-回答要求：
-1. 只能根据用户提供的制度资料回答。
-2. 不得编造制度中没有的金额、日期、条件或流程。
-3. 回答时尽量说明制度名称或条款。
-4. 如果资料中没有答案，明确说明“现有制度资料中没有找到相关规定”。
-5. 回答应准确、简洁，不要加入与问题无关的内容。
+请根据训练中学习到的公司制度回答员工问题。
+回答应准确、简洁。
+当你无法确定答案时，回答：
+“暂时无法确认该制度，请咨询人力资源部门。”
 """
-
 
 # ============================================================
 # 读取 JSONL
 # ============================================================
 
-def load_jsonl(file_path: str) -> List[Dict[str, str]]:
+# def load_jsonl(file_path: str) -> List[Dict[str, str]]:
+#     if not os.path.exists(file_path):
+#         raise FileNotFoundError(f"找不到训练文件：{file_path}")
+#
+#     records: List[Dict[str, str]] = []
+#
+#     with open(file_path, "r", encoding="utf-8") as file:
+#         for line_number, line in enumerate(file, start=1):
+#             line = line.strip()
+#
+#             if not line:
+#                 continue
+#
+#             try:
+#                 record = json.loads(line)
+#             except json.JSONDecodeError as exc:
+#                 raise ValueError(
+#                     f"train.jsonl 第 {line_number} 行不是合法 JSON：{exc}"
+#                 ) from exc
+#
+#             required_fields = {"context", "question", "answer"}
+#             missing_fields = required_fields - record.keys()
+#
+#             if missing_fields:
+#                 raise ValueError(
+#                     f"train.jsonl 第 {line_number} 行缺少字段："
+#                     f"{sorted(missing_fields)}"
+#                 )
+#
+#             records.append(
+#                 {
+#                     "context": str(record["context"]).strip(),
+#                     "question": str(record["question"]).strip(),
+#                     "answer": str(record["answer"]).strip(),
+#                 }
+#             )
+#
+#     if not records:
+#         raise ValueError("训练文件为空，没有可用数据。")
+#
+#     return records
+def load_jsonl(file_path: str):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"找不到训练文件：{file_path}")
 
-    records: List[Dict[str, str]] = []
+    records = []
 
     with open(file_path, "r", encoding="utf-8") as file:
         for line_number, line in enumerate(file, start=1):
@@ -63,60 +110,190 @@ def load_jsonl(file_path: str) -> List[Dict[str, str]]:
                 record = json.loads(line)
             except json.JSONDecodeError as exc:
                 raise ValueError(
-                    f"train.jsonl 第 {line_number} 行不是合法 JSON：{exc}"
+                    f"第 {line_number} 行不是合法JSON：{exc}"
                 ) from exc
 
-            required_fields = {"context", "question", "answer"}
+            required_fields = {"question", "answer"}
             missing_fields = required_fields - record.keys()
 
             if missing_fields:
                 raise ValueError(
-                    f"train.jsonl 第 {line_number} 行缺少字段："
+                    f"第 {line_number} 行缺少字段："
                     f"{sorted(missing_fields)}"
                 )
 
-            records.append(
-                {
-                    "context": str(record["context"]).strip(),
-                    "question": str(record["question"]).strip(),
-                    "answer": str(record["answer"]).strip(),
-                }
-            )
+            question = str(record["question"]).strip()
+            answer = str(record["answer"]).strip()
+
+            if not question or not answer:
+                raise ValueError(
+                    f"第 {line_number} 行的问题或答案为空。"
+                )
+
+            records.append({
+                "question": question,
+                "answer": answer,
+            })
 
     if not records:
-        raise ValueError("训练文件为空，没有可用数据。")
+        raise ValueError("训练数据为空。")
 
     return records
-
 
 # ============================================================
 # Dataset
 # ============================================================
 
+# class CompanyPolicyDataset(Dataset):
+#     """
+#     将每条数据转换为：
+#
+#     system:
+#         回答规则
+#
+#     user:
+#         制度资料 + 问题
+#
+#     assistant:
+#         标准答案
+#
+#     labels 中把 system 和 user 部分设成 -100，
+#     只让 assistant 答案参与 loss。
+#     """
+#
+#     def __init__(
+#         self,
+#         records: List[Dict[str, str]],
+#         tokenizer: AutoTokenizer,
+#         max_length: int,
+#     ) -> None:
+#         self.samples: List[Dict[str, List[int]]] = []
+#         self.tokenizer = tokenizer
+#         self.max_length = max_length
+#
+#         for index, record in enumerate(records):
+#             sample = self._encode_record(record)
+#
+#             if sample is None:
+#                 print(f"跳过第 {index + 1} 条：答案在截断后没有有效 token。")
+#                 continue
+#
+#             self.samples.append(sample)
+#
+#         if not self.samples:
+#             raise ValueError(
+#                 "没有生成有效训练样本。请增大 MAX_LENGTH，"
+#                 "或者缩短 context。"
+#             )
+#
+#     def _encode_record(
+#         self,
+#         record: Dict[str, str],
+#     ) -> Dict[str, List[int]] | None:
+#
+#         user_content = (
+#             "请根据下面的公司制度资料回答问题。\n\n"
+#             f"【制度资料】\n{record['context']}\n\n"
+#             f"【员工问题】\n{record['question']}"
+#         )
+#
+#         # 只有 system + user，用于计算回答开始的位置
+#         prompt_messages = [
+#             {
+#                 "role": "system",
+#                 "content": SYSTEM_PROMPT,
+#             },
+#             {
+#                 "role": "user",
+#                 "content": user_content,
+#             },
+#         ]
+#
+#         # 完整对话：system + user + assistant
+#         full_messages = [
+#             *prompt_messages,
+#             {
+#                 "role": "assistant",
+#                 "content": record["answer"],
+#             },
+#         ]
+#
+#         # add_generation_prompt=True 会在结尾加入 assistant 起始标记
+#         prompt_text = self.tokenizer.apply_chat_template(
+#             prompt_messages,
+#             tokenize=False,
+#             add_generation_prompt=True,
+#         )
+#
+#         # 完整训练文本已经包含 assistant，不再添加生成提示
+#         full_text = self.tokenizer.apply_chat_template(
+#             full_messages,
+#             tokenize=False,
+#             add_generation_prompt=False,
+#         )
+#
+#         prompt_ids = self.tokenizer(
+#             prompt_text,
+#             add_special_tokens=False,
+#         )["input_ids"]
+#
+#         full_encoding = self.tokenizer(
+#             full_text,
+#             add_special_tokens=False,
+#             truncation=True,
+#             max_length=self.max_length,
+#         )
+#
+#         input_ids = full_encoding["input_ids"]
+#         attention_mask = full_encoding["attention_mask"]
+#
+#         # labels 初始等于 input_ids
+#         labels = input_ids.copy()
+#
+#         # system、user、assistant 起始标记不计算 loss
+#         prompt_length = min(len(prompt_ids), len(labels))
+#
+#         for position in range(prompt_length):
+#             labels[position] = -100
+#
+#         # 若答案全部被截断，则跳过
+#         if all(label == -100 for label in labels):
+#             return None
+#
+#         return {
+#             "input_ids": input_ids,
+#             "attention_mask": attention_mask,
+#             "labels": labels,
+#         }
+#
+#     def __len__(self) -> int:
+#         return len(self.samples)
+#
+#     def __getitem__(self, index: int) -> Dict[str, List[int]]:
+#         return self.samples[index]
 class CompanyPolicyDataset(Dataset):
     """
-    将每条数据转换为：
+    训练格式：
 
     system:
-        回答规则
+        你是公司制度问答助手
 
     user:
-        制度资料 + 问题
+        用户设置的问题
 
     assistant:
-        标准答案
+        用户设置的标准答案
 
-    labels 中把 system 和 user 部分设成 -100，
-    只让 assistant 答案参与 loss。
+    只对 assistant 部分计算损失。
     """
 
     def __init__(
         self,
-        records: List[Dict[str, str]],
-        tokenizer: AutoTokenizer,
-        max_length: int,
-    ) -> None:
-        self.samples: List[Dict[str, List[int]]] = []
+        records,
+        tokenizer,
+        max_length,
+    ):
+        self.samples = []
         self.tokenizer = tokenizer
         self.max_length = max_length
 
@@ -124,29 +301,21 @@ class CompanyPolicyDataset(Dataset):
             sample = self._encode_record(record)
 
             if sample is None:
-                print(f"跳过第 {index + 1} 条：答案在截断后没有有效 token。")
+                print(
+                    f"跳过第 {index + 1} 条："
+                    f"答案在截断后没有有效token。"
+                )
                 continue
 
             self.samples.append(sample)
 
         if not self.samples:
             raise ValueError(
-                "没有生成有效训练样本。请增大 MAX_LENGTH，"
-                "或者缩短 context。"
+                "没有有效训练样本，请增大MAX_LENGTH。"
             )
 
-    def _encode_record(
-        self,
-        record: Dict[str, str],
-    ) -> Dict[str, List[int]] | None:
-
-        user_content = (
-            "请根据下面的公司制度资料回答问题。\n\n"
-            f"【制度资料】\n{record['context']}\n\n"
-            f"【员工问题】\n{record['question']}"
-        )
-
-        # 只有 system + user，用于计算回答开始的位置
+    def _encode_record(self, record):
+        # 模型生成答案前看到的内容
         prompt_messages = [
             {
                 "role": "system",
@@ -154,11 +323,11 @@ class CompanyPolicyDataset(Dataset):
             },
             {
                 "role": "user",
-                "content": user_content,
+                "content": record["question"],
             },
         ]
 
-        # 完整对话：system + user + assistant
+        # 完整训练对话
         full_messages = [
             *prompt_messages,
             {
@@ -167,14 +336,14 @@ class CompanyPolicyDataset(Dataset):
             },
         ]
 
-        # add_generation_prompt=True 会在结尾加入 assistant 起始标记
+        # system + user + assistant开始标记
         prompt_text = self.tokenizer.apply_chat_template(
             prompt_messages,
             tokenize=False,
             add_generation_prompt=True,
         )
 
-        # 完整训练文本已经包含 assistant，不再添加生成提示
+        # system + user + assistant答案
         full_text = self.tokenizer.apply_chat_template(
             full_messages,
             tokenize=False,
@@ -196,16 +365,16 @@ class CompanyPolicyDataset(Dataset):
         input_ids = full_encoding["input_ids"]
         attention_mask = full_encoding["attention_mask"]
 
-        # labels 初始等于 input_ids
         labels = input_ids.copy()
 
-        # system、user、assistant 起始标记不计算 loss
-        prompt_length = min(len(prompt_ids), len(labels))
+        # prompt不参与损失，只训练答案部分
+        prompt_length = min(
+            len(prompt_ids),
+            len(labels),
+        )
 
-        for position in range(prompt_length):
-            labels[position] = -100
+        labels[:prompt_length] = [-100] * prompt_length
 
-        # 若答案全部被截断，则跳过
         if all(label == -100 for label in labels):
             return None
 
@@ -215,12 +384,11 @@ class CompanyPolicyDataset(Dataset):
             "labels": labels,
         }
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self.samples)
 
-    def __getitem__(self, index: int) -> Dict[str, List[int]]:
+    def __getitem__(self, index):
         return self.samples[index]
-
 
 # ============================================================
 # 动态 padding
@@ -393,7 +561,7 @@ def main() -> None:
         # LoRA常用学习率通常比全参数微调大
         learning_rate=2e-4,
 
-        num_train_epochs=3,
+        num_train_epochs=100,
 
         # 使用FP16混合精度训练
         fp16=True,

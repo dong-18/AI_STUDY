@@ -245,7 +245,7 @@ class PPOTrainer:  # 定义 PPO 训练器
         self.max_grad_norm = max_grad_norm  # 保存最大梯度范数
 
         self.model = PolicyValueNet(board_size=board_size).to(device)  # 创建网络并放到设备上
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)  # 创建 Adam 优化器?lr用在哪
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)  # 创建 Adam 优化器
 
     def update(self, transitions, batch_size=128, epochs=4):  # 使用一批样本更新 PPO
         advantages, returns = compute_gae(transitions, self.gamma, self.gae_lambda)  # 计算优势和回报

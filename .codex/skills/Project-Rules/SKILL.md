@@ -10,4 +10,3 @@ Only modify:
 D:\pythWork\chanxiaohu_zijianmoxing
 
 
-Before editing, inspect the project structure.
