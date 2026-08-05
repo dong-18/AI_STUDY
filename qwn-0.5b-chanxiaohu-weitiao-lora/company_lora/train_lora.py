@@ -26,7 +26,8 @@ from peft import (
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 TRAIN_FILE = "./train.jsonl"
-OUTPUT_DIR = "./output/company-qwen-lora"
+# 使用独立目录保存本轮实验，避免与旧checkpoint-99/100混在一起
+OUTPUT_DIR = "./output/company-qwen-lora-v2"
 
 # GTX 1060 3GB 建议从 384 或 512 开始
 MAX_LENGTH = 512
@@ -506,7 +507,8 @@ def main() -> None:
         # LoRA缩放系数，实际缩放约为 alpha / r
         lora_alpha=16,
 
-        lora_dropout=0.05,
+        # 当前只有149条训练数据，适当增大dropout以降低记忆训练样本的风险
+        lora_dropout=0.1,
 
         # 不训练原模型bias
         bias="none",
@@ -558,10 +560,12 @@ def main() -> None:
         # 累计8次后更新一次，等效batch约为8
         gradient_accumulation_steps=8,
 
-        # LoRA常用学习率通常比全参数微调大
-        learning_rate=2e-4,
+        # 小数据集降低学习率，减少后期对制度措辞和可爱语气的过拟合
+        learning_rate=1e-4,
 
-        num_train_epochs=100,
+        # 149条数据、等效batch约8时，每轮约19个参数更新；
+        # 12轮约228步，足够观察收敛，同时避免100轮造成严重过拟合
+        num_train_epochs=12,
 
         # 使用FP16混合精度训练
         fp16=True,
@@ -573,19 +577,23 @@ def main() -> None:
         # 梯度裁剪
         max_grad_norm=1.0,
 
+        # 小数据集使用轻量权重衰减，提升泛化能力
+        weight_decay=0.01,
+
         # 学习率预热
-        warmup_ratio=0.05,
+        warmup_ratio=0.1,
 
         # 余弦学习率调度
         lr_scheduler_type="cosine",
 
-        logging_steps=1,
+        # 约每轮记录4次，既能观察趋势，也避免日志过密
+        logging_steps=5,
 
         # 每个epoch保存一次
         save_strategy="epoch",
 
-        # 最多保留两个checkpoint
-        save_total_limit=2,
+        # 保留每个epoch的checkpoint，便于逐个运行val.jsonl选择最佳轮次
+        save_total_limit=12,
 
         # 数据集已自行处理字段
         remove_unused_columns=False,

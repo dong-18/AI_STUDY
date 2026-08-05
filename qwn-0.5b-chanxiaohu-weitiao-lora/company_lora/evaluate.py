@@ -1,12 +1,17 @@
 """
-评估原始 Qwen 模型和 LoRA 模型。
+评估“给定制度 context 后回答”的原始 Qwen 模型和 LoRA 模型。
+
+本脚本使用测试集提供的正确 context，目的是隔离检索误差，判断生成器是否
+学会依据条款回答、引用来源并在资料无答案时拒答。完整 RAG 系统还应单独
+统计检索 Recall@K，然后再统计端到端回答指标。
 
 测试集默认读取 test.jsonl，每行格式示例：
 
-{"id":"leave_001","question":"请事假要提前多久？","reference_answer":"员工请事假应至少提前一个工作日提交申请。","answerable":true,"keywords":["一个工作日"]}
-{"id":"unknown_001","question":"婚假可以休几天？","reference_answer":"暂时无法确认该制度，请咨询人力资源部门。","answerable":false,"keywords":["无法确认","人力资源"]}
+{"id":"leave_001","context":"《请假制度》第三条：事假至少提前一个工作日申请。","question":"请事假要提前多久？","reference_answer":"根据《请假制度》第三条，事假至少提前一个工作日申请。","answerable":true,"keywords":["请假制度","第三条","一个工作日"]}
+{"id":"unknown_001","context":"《请假制度》第三条：事假至少提前一个工作日申请。","question":"婚假可以休几天？","reference_answer":"现有制度资料中没有找到相关规定。","answerable":false,"keywords":["没有找到","相关规定"]}
 
 字段说明：
+    context:          必填，提供给模型的制度资料。
     question:         必填，模型需要回答的问题。
     reference_answer: 必填，人工编写的参考答案。
     answerable:       可选，制度是否包含答案，默认 true。
@@ -55,14 +60,17 @@ DEFAULT_OUTPUT_FILE = SCRIPT_DIR / "evaluation_results.json"
 # 必须与训练、推理时的 system prompt 保持一致，否则对比结果不公平。
 SYSTEM_PROMPT = """你是公司制度问答助手。
 
-请根据训练中学习到的公司制度回答员工问题。
-回答应准确、简洁。
-当你无法确定答案时，回答：
-“暂时无法确认该制度，请咨询人力资源部门。”
+回答要求：
+1. 只能根据用户提供的制度资料回答。
+2. 不得编造制度中没有的金额、日期、条件或流程。
+3. 回答时尽量说明制度名称或条款。
+4. 如果资料中没有答案，明确说明“现有制度资料中没有找到相关规定”。
+5. 回答应准确、简洁，不要加入与问题无关的内容。
 """
 
 # 用于判断模型是否选择了“拒答”。实际项目可根据业务话术继续扩展。
 REFUSAL_PATTERNS = (
+    "现有制度资料中没有找到",
     "无法确认",
     "无法确定",
     "没有找到",
@@ -116,6 +124,12 @@ def parse_args() -> argparse.Namespace:
         help="推理设备。auto 会优先使用 CUDA。",
     )
     parser.add_argument(
+        "--max-input-tokens",
+        type=int,
+        default=448,
+        help="system + context + question 最大输入 token 数；只截断 context。",
+    )
+    parser.add_argument(
         "--max-new-tokens",
         type=int,
         default=128,
@@ -146,18 +160,24 @@ def load_test_data(file_path: Path) -> list[dict[str, Any]]:
                     f"{file_path} 第 {line_number} 行不是合法 JSON：{exc}"
                 ) from exc
 
-            missing_fields = {"question", "reference_answer"} - record.keys()
+            missing_fields = {
+                "context",
+                "question",
+                "reference_answer",
+            } - record.keys()
             if missing_fields:
                 raise ValueError(
                     f"{file_path} 第 {line_number} 行缺少字段："
                     f"{sorted(missing_fields)}"
                 )
 
+            context = str(record["context"]).strip()
             question = str(record["question"]).strip()
             reference_answer = str(record["reference_answer"]).strip()
-            if not question or not reference_answer:
+            if not context or not question or not reference_answer:
                 raise ValueError(
-                    f"{file_path} 第 {line_number} 行的问题或参考答案为空。"
+                    f"{file_path} 第 {line_number} 行的 context、问题或"
+                    "参考答案为空。"
                 )
 
             keywords = record.get("keywords", [])
@@ -169,6 +189,7 @@ def load_test_data(file_path: Path) -> list[dict[str, Any]]:
             records.append(
                 {
                     "id": str(record.get("id", f"sample_{line_number:04d}")),
+                    "context": context,
                     "question": question,
                     "reference_answer": reference_answer,
                     "answerable": bool(record.get("answerable", True)),
@@ -320,14 +341,53 @@ def load_model(
 def generate_answer(
     tokenizer,
     model,
+    context: str,
     question: str,
+    max_input_tokens: int,
     max_new_tokens: int,
-) -> tuple[str, float]:
-    """生成一个答案，同时返回本次生成耗时。"""
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": question},
-    ]
+) -> tuple[str, float, int, int, str]:
+    """
+    使用与训练一致的模板生成答案。
+
+    输入过长时只截断 context，始终保留完整的 system prompt 和 question。
+    """
+
+    def make_messages(context_text: str) -> list[dict[str, str]]:
+        user_content = (
+            "请根据下面的公司制度资料回答问题。\n\n"
+            f"【制度资料】\n{context_text}\n\n"
+            f"【员工问题】\n{question}"
+        )
+        return [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ]
+
+    # 先计算不含 context 时固定内容占用的 token，再把剩余空间留给 context。
+    empty_context_ids = tokenizer.apply_chat_template(
+        make_messages(""),
+        tokenize=True,
+        add_generation_prompt=True,
+    )
+    context_budget = max_input_tokens - len(empty_context_ids)
+    if context_budget <= 0:
+        raise ValueError(
+            "system prompt 和 question 已超过 --max-input-tokens，"
+            "请缩短问题或增大限制。"
+        )
+
+    context_ids = tokenizer(
+        context,
+        add_special_tokens=False,
+    )["input_ids"]
+    if len(context_ids) > context_budget:
+        context_ids = context_ids[:context_budget]
+        context = tokenizer.decode(
+            context_ids,
+            skip_special_tokens=True,
+        )
+
+    messages = make_messages(context)
     model_inputs = tokenizer.apply_chat_template(
         messages,
         tokenize=True,
@@ -335,6 +395,20 @@ def generate_answer(
         return_tensors="pt",
         return_dict=True,
     )
+    # decode 后重新分词偶尔会多出少量 token，因此再次确保不超过上限。
+    while model_inputs["input_ids"].shape[1] > max_input_tokens:
+        context_ids = context_ids[:-8]
+        if not context_ids:
+            raise ValueError("无法在保留完整问题的情况下压缩 context。")
+        context = tokenizer.decode(context_ids, skip_special_tokens=True)
+        model_inputs = tokenizer.apply_chat_template(
+            make_messages(context),
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True,
+        )
+
     model_inputs = {
         key: value.to(model.device) for key, value in model_inputs.items()
     }
@@ -367,19 +441,25 @@ def generate_answer(
         generated_ids,
         skip_special_tokens=True,
     ).strip()
-    return answer, latency_seconds
+    return (
+        answer,
+        latency_seconds,
+        input_length,
+        len(generated_ids),
+        context,
+    )
 
 
 def summarize_results(samples: list[dict[str, Any]]) -> dict[str, Any]:
     """汇总逐题指标，分别关注回答质量和拒答能力。"""
-    keyword_scores = [
-        sample["metrics"]["keyword_recall"]
-        for sample in samples
-        if sample["metrics"]["keyword_recall"] is not None
-    ]
     answerable_samples = [sample for sample in samples if sample["answerable"]]
     unanswerable_samples = [
         sample for sample in samples if not sample["answerable"]
+    ]
+    keyword_scores = [
+        sample["metrics"]["keyword_recall"]
+        for sample in answerable_samples
+        if sample["metrics"]["keyword_recall"] is not None
     ]
 
     # 对无答案问题，拒答是正确行为。
@@ -400,18 +480,35 @@ def summarize_results(samples: list[dict[str, Any]]) -> dict[str, Any]:
         "sample_count": len(samples),
         "answerable_count": len(answerable_samples),
         "unanswerable_count": len(unanswerable_samples),
-        "exact_match": mean(
-            sample["metrics"]["exact_match"] for sample in samples
+        # 文本相似度只统计可回答题；拒答题不应因话术不同而被扣分。
+        "answerable_exact_match": (
+            mean(s["metrics"]["exact_match"] for s in answerable_samples)
+            if answerable_samples
+            else None
         ),
-        "character_f1": mean(
-            sample["metrics"]["character_f1"] for sample in samples
+        "answerable_character_f1": (
+            mean(s["metrics"]["character_f1"] for s in answerable_samples)
+            if answerable_samples
+            else None
         ),
-        "rouge_l": mean(sample["metrics"]["rouge_l"] for sample in samples),
-        "keyword_recall": mean(keyword_scores) if keyword_scores else None,
+        "answerable_rouge_l": (
+            mean(s["metrics"]["rouge_l"] for s in answerable_samples)
+            if answerable_samples
+            else None
+        ),
+        "answerable_keyword_recall": (
+            mean(keyword_scores) if keyword_scores else None
+        ),
         "refusal_accuracy": refusal_accuracy,
         "false_refusal_rate": false_refusal_rate,
         "average_latency_seconds": mean(
             sample["latency_seconds"] for sample in samples
+        ),
+        "average_input_tokens": mean(
+            sample["input_tokens"] for sample in samples
+        ),
+        "average_output_tokens": mean(
+            sample["output_tokens"] for sample in samples
         ),
     }
 
@@ -422,6 +519,7 @@ def evaluate_variant(
     base_model_name: str,
     lora_path: Path,
     device: torch.device,
+    max_input_tokens: int,
     max_new_tokens: int,
 ) -> dict[str, Any]:
     """评估一种模型，并返回可序列化的完整结果。"""
@@ -435,18 +533,29 @@ def evaluate_variant(
 
     samples: list[dict[str, Any]] = []
     for index, record in enumerate(records, start=1):
-        prediction, latency_seconds = generate_answer(
+        (
+            prediction,
+            latency_seconds,
+            input_tokens,
+            output_tokens,
+            effective_context,
+        ) = generate_answer(
             tokenizer=tokenizer,
             model=model,
+            context=record["context"],
             question=record["question"],
+            max_input_tokens=max_input_tokens,
             max_new_tokens=max_new_tokens,
         )
         refusal = is_refusal(prediction)
 
         sample_result = {
             **record,
+            "context": effective_context,
             "prediction": prediction,
             "latency_seconds": latency_seconds,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
             "metrics": {
                 "exact_match": exact_match(
                     prediction, record["reference_answer"]
@@ -496,10 +605,22 @@ def print_summary(result: dict[str, Any]) -> None:
 
     print(f"\n===== {result['model'].upper()} 评估结果 =====")
     print(f"样本数：          {summary['sample_count']}")
-    print(f"Exact Match：     {format_metric(summary['exact_match'])}")
-    print(f"字符级 F1：       {format_metric(summary['character_f1'])}")
-    print(f"ROUGE-L：         {format_metric(summary['rouge_l'])}")
-    print(f"关键词召回率：    {format_metric(summary['keyword_recall'])}")
+    print(
+        "可回答题 Exact Match："
+        f"{format_metric(summary['answerable_exact_match'])}"
+    )
+    print(
+        "可回答题字符级 F1：  "
+        f"{format_metric(summary['answerable_character_f1'])}"
+    )
+    print(
+        "可回答题 ROUGE-L：   "
+        f"{format_metric(summary['answerable_rouge_l'])}"
+    )
+    print(
+        "可回答题关键词召回： "
+        f"{format_metric(summary['answerable_keyword_recall'])}"
+    )
     print(f"拒答准确率：      {format_metric(summary['refusal_accuracy'])}")
     print(f"错误拒答率：      {format_metric(summary['false_refusal_rate'])}")
     print(
@@ -510,6 +631,8 @@ def print_summary(result: dict[str, Any]) -> None:
 
 def main() -> None:
     args = parse_args()
+    if args.max_input_tokens <= 0 or args.max_new_tokens <= 0:
+        raise ValueError("token 长度参数必须大于 0。")
     device = resolve_device(args.device)
     records = load_test_data(args.test_file.resolve())
 
@@ -523,6 +646,8 @@ def main() -> None:
             "lora_path": str(args.lora_path.resolve()),
             "test_file": str(args.test_file.resolve()),
             "device": str(device),
+            "evaluation_mode": "gold_context",
+            "max_input_tokens": args.max_input_tokens,
             "max_new_tokens": args.max_new_tokens,
         },
         "evaluations": [],
@@ -535,6 +660,7 @@ def main() -> None:
             base_model_name=args.base_model,
             lora_path=args.lora_path.resolve(),
             device=device,
+            max_input_tokens=args.max_input_tokens,
             max_new_tokens=args.max_new_tokens,
         )
         results["evaluations"].append(evaluation)

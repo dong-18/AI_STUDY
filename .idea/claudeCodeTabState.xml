@@ -6,10 +6,9 @@
         <entry key="0">
           <value>
             <TabSessionState>
-              <option name="provider" value="codex" />
-              <option name="sessionId" value="019fa783-acd7-7c41-9122-28712405d657" />
+              <option name="provider" value="claude" />
               <option name="cwd" value="D:\pythWork" />
-              <option name="model" value="gpt-5.6-sol" />
+              <option name="model" value="claude-sonnet-4-6" />
               <option name="permissionMode" value="default" />
             </TabSessionState>
           </value>

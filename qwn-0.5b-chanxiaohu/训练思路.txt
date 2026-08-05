@@ -1,0 +1,84 @@
+• 你的整体思路是对的，但有一个关键点需要纠正：LoRA 只能使用 train.jsonl 训练，绝对不要拿 test.jsonl 参与训练或调参。
+
+  建议流程如下：
+
+  Base 跑验证集，建立基准线
+          ↓
+  使用 train.jsonl 训练 LoRA
+          ↓
+  各 checkpoint 分别跑 val.jsonl
+          ↓
+  按制度类别和错误类型分析
+          ↓
+  扩充 train.jsonl，重新训练
+          ↓
+  用 val.jsonl 选择最终 checkpoint
+          ↓
+  Base 和最终 LoRA 各跑一次 test.jsonl
+          ↓
+  得到最终对比结果
+
+  具体原则：
+
+  1. Base 跑 val.jsonl
+
+  先建立未经微调的基准：
+
+  python evaluate.py `
+    --models base `
+    --test-file .\val.jsonl `
+    --output-file .\base_val_results.json
+
+  2. 使用 train.jsonl 训练 LoRA
+
+  python train_lora.py
+
+  不要使用 test.jsonl 训练。
+
+  3. 用验证集评估各 checkpoint
+
+  每个 checkpoint 都使用同一份 val.jsonl，重点比较：
+
+  - 可回答问题的关键词召回
+  - 回答内容准确性
+  - 不可回答问题的拒答率
+  - 可回答问题的错误拒答率
+  - 回答风格是否偏可爱
+  - 是否出现制度外编造
+  - 哪一类制度表现较差
+
+  选择综合表现最好的 checkpoint，不一定是训练步数最多的 checkpoint。
+
+  4. 根据验证集问题补充训练数据
+
+  如果某方面表现不好，应根据错误类型扩充训练集：
+
+  - 同义表达识别差：增加不同问法
+  - 场景题回答差：增加实际工作场景
+  - 容易编造：增加制度未规定样本
+  - 经常错误拒答：增加可回答的边界样本
+  - 时间、金额混淆：增加时间和数字对比样本
+  - 可爱风格不稳定：增加风格统一但措辞不同的答案
+  - 某项制度较弱：补充该制度的训练样本
+
+  不要把验证集原问题直接复制进训练集。应该围绕相同知识点重新设计不同的问题，否则会对验证集过拟合。
+
+  5. 测试集只在最终阶段使用
+
+  完成训练和 checkpoint 选择后，再运行：
+
+  python evaluate.py `
+    --models base lora `
+    --test-file .\test.jsonl `
+    --lora-path .\output\最终checkpoint目录 `
+    --output-file .\base_lora_test_results.json
+
+  测试集最好只在最终决策时使用。如果反复查看测试结果并继续调整训练集，测试集事实上就变成了验证集，最终结果会偏乐观。
+
+  建议把三个数据集的职责固定下来：
+
+  - train.jsonl：用于训练，可以不断扩充
+  - val.jsonl：用于选择 checkpoint 和分析问题
+  - test.jsonl：只用于最终 Base 与 LoRA 对比
+
+  另外，当前验证集 28 条、测试集 37 条，只适合初步实验。后续最好将验证集扩充到约 80～150 条、测试集扩充到约 100～200 条，并保证每类制度都有直接问答、场景题、同义问法和不可回答问题。
