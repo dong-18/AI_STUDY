@@ -579,9 +579,9 @@ def main() -> None:
 
         # 小数据集使用轻量权重衰减，提升泛化能力
         weight_decay=0.01,
-
+                                                   
         # 学习率预热
-        warmup_ratio=0.1,
+        warmup_steps=0.1,
 
         # 余弦学习率调度
         lr_scheduler_type="cosine",

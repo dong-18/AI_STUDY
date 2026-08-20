@@ -1,0 +1,39 @@
+  现在支持：
+
+  - 使用 --checkpoint 指定任意 LoRA checkpoint。
+  - 推理格式与训练完全一致，包含制度资料 context。
+  - 支持单条命令验证。
+  - 支持固定制度资料下连续交互提问。
+  - 自动选择 CUDA/CPU。
+  - 自动检查 checkpoint 是否包含 adapter_config.json。
+  - 显示输入和生成 token 数量。
+
+  验证 checkpoint-19：
+
+  Set-Location "D:\ai\AI_STUDY\qwn-0.5b-chanxiaohu-weitiao-lora\company_lora"
+
+  python .\infer_lora.py `
+    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-19" `
+    --context "《卫生规范》第4项：办公区域内严禁吸烟。" `
+    --question "有人想在工位旁抽烟，可以吗？" `
+    --device auto
+
+  进入交互模式，并固定一段制度资料：
+
+  python .\infer_lora.py `
+    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-19" `
+    --context "《公司形象》第4项：遇有客人进入工作场地应礼貌接待，上班时间（包括午餐时间）办公室内应保证有人接待。" `
+    --device auto
+
+  不提供 --context 时，每轮会分别要求输入制度资料和员工问题：
+
+  python .\infer_lora.py --checkpoint ".\output\company-qwen-lora-v2\checkpoint-19"
+
+  checkpoint-19 已被设置成默认 checkpoint，因此也可以直接运行：
+
+  python .\infer_lora.py
+
+  脚本语法检查和 checkpoint 文件结构检查均已通过。实际模型推理需要在安装了 torch、transformers 和 peft 的训练虚拟环境中运行。
+
+  
+  对于拒答场景，可能context有相关，但和问题关系不大，或者敏感问题不答，其他有同义词表达

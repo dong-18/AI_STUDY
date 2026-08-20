@@ -7,6 +7,6 @@ description: Rules for this project
 
 Only modify:
 
-D:\pythWork\chanxiaohu_zijianmoxing
+D:\ai\AI_STUDY\qwn-0.5b-chanxiaohu-weitiao-lora和D:\ai\AI_STUDY\qwn-0.5b-chanxiaohu
 
 

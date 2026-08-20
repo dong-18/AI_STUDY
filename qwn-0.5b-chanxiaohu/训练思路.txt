@@ -28,7 +28,6 @@
     --models base `
     --test-file .\val.jsonl `
     --output-file .\base_val_results.json
-
   2. 使用 train.jsonl 训练 LoRA
 
   python train_lora.py
@@ -36,9 +35,9 @@
   不要使用 test.jsonl 训练。
 
   3. 用验证集评估各 checkpoint
-
+  python .\evaluate.py  --models lora --lora-path ".\output\company-qwen-lora-v2\checkpoint-19" --output-file ".\evaluation_checkpoint_19.json" --test-file .\val.jsonl
   每个 checkpoint 都使用同一份 val.jsonl，重点比较：
-
+，使其与验证答案一样简短、直接、自然、可爱风格，同时增加自然场景问题
   - 可回答问题的关键词召回
   - 回答内容准确性
   - 不可回答问题的拒答率
