@@ -1,5 +1,6 @@
 from pathlib import Path
-
+import re
+from langchain_core.documents import Document
 import torch
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -23,7 +24,7 @@ LORA_PATH = (
     / "qwn-0.5b-chanxiaohu-weitiao-lora"
     / "company_lora"
     / "output"
-    / "company-qwen-lora"
+    / "company-qwen-lora-v2"
 )
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-zh-v1.5"
 
@@ -60,13 +61,34 @@ loader = DirectoryLoader(
 docs = loader.load()
 if not docs:
     raise ValueError(f"公司制度目录中没有找到 txt 文件：{DOCS_DIR}")
+#按照长文来切分
+# splitter = RecursiveCharacterTextSplitter(
+#     chunk_size=220,
+#     chunk_overlap=40,
+#     separators=["\n\n", "\n", "。", "；", "，"],
+# )
+# chunks = splitter.split_documents(docs)
+#按照条例切分
+chunks = []
 
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=220,
-    chunk_overlap=40,
-    separators=["\n\n", "\n", "。", "；", "，"],
-)
-chunks = splitter.split_documents(docs)
+for doc in docs:
+    # 在每个“数字、”前切分，例如 1、 2、 10、
+    clauses = re.split(
+        r"(?m)(?=^\d+、)",
+        doc.page_content.strip(),
+    )
+
+    for clause in clauses:
+        clause = clause.strip()
+        if not clause:
+            continue
+
+        chunks.append(
+            Document(
+                page_content=clause,
+                metadata=doc.metadata.copy(),
+            )
+        )
 if not chunks:
     raise ValueError("公司制度文档没有生成有效切片。")
 

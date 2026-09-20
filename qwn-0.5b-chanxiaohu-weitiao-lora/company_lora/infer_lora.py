@@ -38,6 +38,11 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_BASE_MODEL,
         help="基础模型名称或本地目录。",
     )
+    parser.add_argument(
+        "--base-only",
+        action="store_true",
+        help="只运行基础模型，不加载 LoRA checkpoint。",
+    )
     context_group = parser.add_mutually_exclusive_group()
     context_group.add_argument(
         "--context",
@@ -96,13 +101,14 @@ def validate_checkpoint(checkpoint: Path) -> Path:
 
 
 def load_model(
-    checkpoint: Path,
+    checkpoint: Path | None,
     base_model_name: str,
     device: torch.device,
 ):
     tokenizer_source = (
         str(checkpoint)
-        if (checkpoint / "tokenizer_config.json").is_file()
+        if checkpoint is not None
+        and (checkpoint / "tokenizer_config.json").is_file()
         else base_model_name
     )
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_source, use_fast=True)
@@ -115,7 +121,10 @@ def load_model(
         dtype=dtype,
         low_cpu_mem_usage=True,
     ).to(device)
-    model = PeftModel.from_pretrained(base_model, str(checkpoint))
+    if checkpoint is None:
+        model = base_model
+    else:
+        model = PeftModel.from_pretrained(base_model, str(checkpoint))
     model.eval()
     model.config.use_cache = True
     return tokenizer, model
@@ -274,11 +283,13 @@ def main() -> None:
     if args.question and not (args.context or args.context_file):
         raise ValueError("使用 --question 时，还必须提供 --context 或 --context-file。")
 
-    checkpoint = validate_checkpoint(args.checkpoint)
+    checkpoint = None if args.base_only else validate_checkpoint(args.checkpoint)
     device = resolve_device(args.device)
     context = read_context(args)
 
-    print(f"checkpoint：{checkpoint}")
+    print("运行模式：基础模型" if args.base_only else "运行模式：LoRA 模型")
+    if checkpoint is not None:
+        print(f"checkpoint：{checkpoint}")
     print(f"基础模型：{args.base_model}")
     print(f"设备：{device}")
     tokenizer, model = load_model(

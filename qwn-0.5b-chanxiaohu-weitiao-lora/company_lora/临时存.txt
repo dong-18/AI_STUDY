@@ -21,8 +21,8 @@
   进入交互模式，并固定一段制度资料：
 
   python .\infer_lora.py `
-    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-19" `
-    --context "《公司形象》第4项：遇有客人进入工作场地应礼貌接待，上班时间（包括午餐时间）办公室内应保证有人接待。" `
+    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-348" `
+    --context "《电脑管理》第5项：重要业务数据由数据使用者本人及时做好备份。" `
     --device auto
 
   不提供 --context 时，每轮会分别要求输入制度资料和员工问题：

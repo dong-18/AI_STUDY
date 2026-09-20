@@ -27,7 +27,7 @@ from peft import (
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 TRAIN_FILE = "./train.jsonl"
 # 使用独立目录保存本轮实验，避免与旧checkpoint-99/100混在一起
-OUTPUT_DIR = "./output/company-qwen-lora-v2"
+OUTPUT_DIR = "./output/company-qwen-lora-v3"
 
 # GTX 1060 3GB 建议从 384 或 512 开始
 MAX_LENGTH = 512

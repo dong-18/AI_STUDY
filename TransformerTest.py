@@ -8,7 +8,7 @@ class PositionalEncoding(nn.Module):  # 定义位置编码类，继承自 nn.Mod
         pe = torch.zeros(max_len, d_model)  # 创建一个形状为 (max_len, d_model) 的全零张量，用于存储位置编码
         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)  # 生成位置索引 [0, 1, 2, ..., max_len-1]，并扩展为列向量形状 (max_len, 1)
         div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))  # 计算位置编码中的缩放项，只针对偶数维度生成频率系数
-
+        为什么需要位置信息（没有位置信息会怎么样，是因为最后结果无法区分，然后mlp只对自己计算吗），绝对和相对位置
         pe[:, 0::2] = torch.sin(position * div_term)  # 对位置编码的偶数列使用正弦函数填充
         pe[:, 1::2] = torch.cos(position * div_term)  # 对位置编码的奇数列使用余弦函数填充
 
