@@ -1,0 +1,743 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "lora_path": "D:\\ai\\AI_STUDY\\qwn-0.5b-chanxiaohu-weitiao-lora\\company_lora\\output\\company-qwen-lora-v2\\checkpoint-324",
+    "test_file": "D:\\ai\\AI_STUDY\\qwn-0.5b-chanxiaohu-weitiao-lora\\company_lora\\generalization_test.jsonl",
+    "device": "cuda",
+    "evaluation_mode": "gold_context",
+    "max_input_tokens": 448,
+    "max_new_tokens": 128
+  },
+  "evaluations": [
+    {
+      "model": "lora",
+      "summary": {
+        "sample_count": 30,
+        "answerable_count": 20,
+        "unanswerable_count": 10,
+        "answerable_exact_match": 0.0,
+        "answerable_character_f1": 0.43899370559005546,
+        "answerable_rouge_l": 0.41770650367675455,
+        "answerable_keyword_recall": 0.555,
+        "refusal_accuracy": 0.9,
+        "false_refusal_rate": 0.2,
+        "average_latency_seconds": 1.0728812099987408,
+        "average_input_tokens": 173.43333333333334,
+        "average_output_tokens": 19.033333333333335
+      },
+      "samples": [
+        {
+          "id": "gen_answerable_001",
+          "context": "《2027薪酬新规》第2条：自本规定生效之日起，员工薪金统一在每月28日发放。",
+          "question": "按照当前薪酬新规，员工每月哪一天领取工资？",
+          "reference_answer": "按照当前规定，员工薪金统一在每月28日发放哦。",
+          "answerable": true,
+          "keywords": [
+            "每月28日",
+            "发放"
+          ],
+          "prediction": "员工薪金统一在每月28日发放哦。",
+          "latency_seconds": 2.3308318000053987,
+          "input_tokens": 162,
+          "output_tokens": 13,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.8333333333333333,
+            "rouge_l": 0.8333333333333333,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_001",
+          "context": "《2027薪酬新规》第2条：自本规定生效之日起，员工薪金统一在每月28日发放。",
+          "question": "每月28日发工资时统一使用哪家银行？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.2369694000080926,
+          "input_tokens": 162,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_conflict_001",
+          "context": "《2027薪酬新规》第2条：自本规定生效之日起，员工薪金统一在每月28日发放。",
+          "question": "有人说工资是15日发放，但依据眼前的新规究竟应在几日发放？",
+          "reference_answer": "应以当前提供的新规为准，员工薪金在每月28日发放哦。",
+          "answerable": true,
+          "keywords": [
+            "当前",
+            "每月28日"
+          ],
+          "prediction": "抱歉呀，这个问题虽然提到了\"工资15日发放\"的说法，但相关条款并未涉及此内容。因此，我不能依据这段资料完整回答哦。",
+          "latency_seconds": 2.790195199995651,
+          "input_tokens": 169,
+          "output_tokens": 36,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.1891891891891892,
+            "rouge_l": 0.16216216216216217,
+            "keyword_recall": 0.0,
+            "is_refusal": true,
+            "refusal_is_correct": false
+          }
+        },
+        {
+          "id": "gen_answerable_002",
+          "context": "《星河见习管理办法》第4条：见习人员的见习期为五个月，见习期间每两个月进行一次综合评议。",
+          "question": "星河见习人员的见习期一共持续多久？",
+          "reference_answer": "见习期为五个月哦。",
+          "answerable": true,
+          "keywords": [
+            "五个月"
+          ],
+          "prediction": "五个月，见习期每两个月进行一次综合评议哦。",
+          "latency_seconds": 0.9478754000010667,
+          "input_tokens": 166,
+          "output_tokens": 15,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.5185185185185185,
+            "rouge_l": 0.44444444444444436,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_002",
+          "context": "《星河见习管理办法》第4条：见习人员的见习期为五个月，见习期间每两个月进行一次综合评议。",
+          "question": "五个月见习期内每个月可以领取多少补助？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0805608999944525,
+          "input_tokens": 164,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_conflict_002",
+          "context": "《星河见习管理办法》第4条：见习人员的见习期为五个月，见习期间每两个月进行一次综合评议。",
+          "question": "以前听说见习期是两个月，当前办法规定的期限到底是多少？",
+          "reference_answer": "应依据当前办法执行，见习期为五个月哦。",
+          "answerable": true,
+          "keywords": [
+            "当前办法",
+            "五个月"
+          ],
+          "prediction": "目前见习期为五个月，每两个月进行一次综合评议。",
+          "latency_seconds": 0.7713026999990689,
+          "input_tokens": 168,
+          "output_tokens": 16,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.4736842105263158,
+            "rouge_l": 0.42105263157894735,
+            "keyword_recall": 0.5,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_answerable_003",
+          "context": "《晨曦出勤奖励细则》第6条：全年没有迟到和早退记录且请假不超过两天者，可获1800元出勤奖，奖金在次年3月10日发放。",
+          "question": "晨曦出勤奖的奖金金额是多少？",
+          "reference_answer": "符合条件者可获得1800元出勤奖哦。",
+          "answerable": true,
+          "keywords": [
+            "1800元",
+            "出勤奖"
+          ],
+          "prediction": "1800元哦。",
+          "latency_seconds": 0.4315280000009807,
+          "input_tokens": 178,
+          "output_tokens": 8,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.5217391304347826,
+            "rouge_l": 0.5217391304347826,
+            "keyword_recall": 0.5,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_003",
+          "context": "《晨曦出勤奖励细则》第6条：全年没有迟到和早退记录且请假不超过两天者，可获1800元出勤奖，奖金在次年3月10日发放。",
+          "question": "1800元出勤奖需要缴纳多少个人所得税？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉哦，这个问题虽然提到了相关条款，但与当前制度条款的实际内容不符，我不能依据这段资料作答。",
+          "latency_seconds": 1.4274236999917775,
+          "input_tokens": 182,
+          "output_tokens": 28,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.27027027027027023,
+            "rouge_l": 0.16216216216216214,
+            "keyword_recall": 0.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_conflict_003",
+          "context": "《晨曦出勤奖励细则》第6条：全年没有迟到和早退记录且请假不超过两天者，可获1800元出勤奖，奖金在次年3月10日发放。",
+          "question": "旧说法中的奖金是1000元，眼前细则确定的出勤奖金额是多少？",
+          "reference_answer": "以眼前细则为准，出勤奖金额为1800元哦。",
+          "answerable": true,
+          "keywords": [
+            "眼前细则",
+            "1800元"
+          ],
+          "prediction": "1800元哦。",
+          "latency_seconds": 0.41062709999096114,
+          "input_tokens": 189,
+          "output_tokens": 8,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.4799999999999999,
+            "rouge_l": 0.4799999999999999,
+            "keyword_recall": 0.5,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_answerable_004",
+          "context": "《远航临时借款规则》第3条：临时借款须填写【资金领用单】并由财务总监批准，领取后十二天内完成核销，未核销前不得再次申请。",
+          "question": "远航临时借款应由谁批准？",
+          "reference_answer": "临时借款应由财务总监批准哦。",
+          "answerable": true,
+          "keywords": [
+            "财务总监",
+            "批准"
+          ],
+          "prediction": "需填写《资金领用单》并经财务总监批准，领取后十二天内核销，未核销前不得再次申请哦。",
+          "latency_seconds": 1.5964154999965103,
+          "input_tokens": 174,
+          "output_tokens": 32,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.28571428571428575,
+            "rouge_l": 0.28571428571428575,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_004",
+          "context": "《远航临时借款规则》第3条：临时借款须填写【资金领用单】并由财务总监批准，领取后十二天内完成核销，未核销前不得再次申请。",
+          "question": "申请临时借款时需要支付多少手续费？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.1584219000069425,
+          "input_tokens": 174,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_conflict_004",
+          "context": "《远航临时借款规则》第3条：临时借款须填写【资金领用单】并由财务总监批准，领取后十二天内完成核销，未核销前不得再次申请。",
+          "question": "如果旧流程要求七天内销账，按照当前规则现在应在多少天内核销？",
+          "reference_answer": "按照当前规则，应在领取后十二天内完成核销哦。",
+          "answerable": true,
+          "keywords": [
+            "当前规则",
+            "十二天内",
+            "核销"
+          ],
+          "prediction": "十二天内完成核销，未核销前不得再次申请哦。",
+          "latency_seconds": 0.9299463000061223,
+          "input_tokens": 186,
+          "output_tokens": 17,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.5128205128205129,
+            "rouge_l": 0.46153846153846156,
+            "keyword_recall": 0.6666666666666666,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_answerable_005",
+          "context": "《云帆长期服务福利》第8条：连续服务超过四年的员工，可享十天带薪休整和3500元一次性出行补助，休整前须获得部门负责人许可。",
+          "question": "云帆长期服务员工可以获得多少出行补助？",
+          "reference_answer": "符合条件的员工可获得3500元一次性出行补助哦。",
+          "answerable": true,
+          "keywords": [
+            "3500元",
+            "一次性",
+            "出行补助"
+          ],
+          "prediction": "连续服务超过四年的员工可享有十天带薪休整和3500元的一次性出行补助，需经部门负责人许可哦。",
+          "latency_seconds": 1.8189750000019558,
+          "input_tokens": 176,
+          "output_tokens": 34,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.5074626865671641,
+            "rouge_l": 0.5074626865671641,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_005",
+          "context": "《云帆长期服务福利》第8条：连续服务超过四年的员工，可享十天带薪休整和3500元一次性出行补助，休整前须获得部门负责人许可。",
+          "question": "领取3500元出行补助后必须前往哪个城市？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.068693199995323,
+          "input_tokens": 180,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_conflict_005",
+          "context": "《云帆长期服务福利》第8条：连续服务超过四年的员工，可享十天带薪休整和3500元一次性出行补助，休整前须获得部门负责人许可。",
+          "question": "有人仍按一周休假执行，当前福利条款实际规定能休整多少天？",
+          "reference_answer": "应按当前福利条款执行，符合条件者可享十天带薪休整哦。",
+          "answerable": true,
+          "keywords": [
+            "当前福利条款",
+            "十天",
+            "带薪休整"
+          ],
+          "prediction": "能休整十天，休整前需得到部门负责人许可哦。",
+          "latency_seconds": 0.8472741000005044,
+          "input_tokens": 184,
+          "output_tokens": 17,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.32558139534883723,
+            "rouge_l": 0.23255813953488372,
+            "keyword_recall": 0.3333333333333333,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_answerable_006",
+          "context": "《蓝环设备借用规程》第5条：标有蓝环标签的设备最长可借用四天，归还前须由资产管理员检查设备外观和配件。",
+          "question": "带有蓝环标签的设备最多能借用几天？",
+          "reference_answer": "最长可以借用四天哦。",
+          "answerable": true,
+          "keywords": [
+            "最长",
+            "四天"
+          ],
+          "prediction": "4天哦。",
+          "latency_seconds": 0.2745598999899812,
+          "input_tokens": 169,
+          "output_tokens": 5,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.3333333333333333,
+            "rouge_l": 0.3333333333333333,
+            "keyword_recall": 0.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_006",
+          "context": "《蓝环设备借用规程》第5条：标有蓝环标签的设备最长可借用四天，归还前须由资产管理员检查设备外观和配件。",
+          "question": "借用蓝环设备四天需要缴纳多少押金？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0206726000033086,
+          "input_tokens": 169,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_compound_001",
+          "context": "《蓝环设备借用规程》第5条：标有蓝环标签的设备最长可借用四天，归还前须由资产管理员检查设备外观和配件。",
+          "question": "蓝环设备最长可借多久，归还之前由谁检查哪些内容？",
+          "reference_answer": "最长可借用四天，归还前由资产管理员检查设备外观和配件哦。",
+          "answerable": true,
+          "keywords": [
+            "四天",
+            "资产管理员",
+            "设备外观",
+            "配件"
+          ],
+          "prediction": "最长可借用四天，归还前需由资产管理员检查设备外观和配件哦。",
+          "latency_seconds": 1.0603851000050781,
+          "input_tokens": 175,
+          "output_tokens": 21,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.9811320754716981,
+            "rouge_l": 0.9811320754716981,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_answerable_007",
+          "context": "《琥珀会议室使用规范》第2条：琥珀会议室每周三开放申请，申请须经行政专员批准，每次使用不得超过九十分钟。",
+          "question": "琥珀会议室每周哪一天开放申请？",
+          "reference_answer": "每周三开放申请哦。",
+          "answerable": true,
+          "keywords": [
+            "每周三",
+            "开放申请"
+          ],
+          "prediction": "每周三开放申请哦，每次使用不超过九十分钟。",
+          "latency_seconds": 0.6317287999991095,
+          "input_tokens": 162,
+          "output_tokens": 13,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.5925925925925926,
+            "rouge_l": 0.5925925925925926,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_007",
+          "context": "《琥珀会议室使用规范》第2条：琥珀会议室每周三开放申请，申请须经行政专员批准，每次使用不得超过九十分钟。",
+          "question": "使用琥珀会议室时可以容纳多少人？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "不可以超过九十分钟哦。",
+          "latency_seconds": 0.3537083999981405,
+          "input_tokens": 163,
+          "output_tokens": 7,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.047619047619047616,
+            "rouge_l": 0.047619047619047616,
+            "keyword_recall": 0.0,
+            "is_refusal": false,
+            "refusal_is_correct": false
+          }
+        },
+        {
+          "id": "gen_compound_002",
+          "context": "《琥珀会议室使用规范》第2条：琥珀会议室每周三开放申请，申请须经行政专员批准，每次使用不得超过九十分钟。",
+          "question": "琥珀会议室何时开放申请，由谁批准，单次最多使用多久？",
+          "reference_answer": "每周三开放申请，由行政专员批准，单次使用不得超过九十分钟哦。",
+          "answerable": true,
+          "keywords": [
+            "每周三",
+            "行政专员",
+            "九十分钟"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0250875999918208,
+          "input_tokens": 170,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.03389830508474576,
+            "rouge_l": 0.03389830508474576,
+            "keyword_recall": 0.0,
+            "is_refusal": true,
+            "refusal_is_correct": false
+          }
+        },
+        {
+          "id": "gen_answerable_008",
+          "context": "《银叶档案保管办法》第7条：银叶项目的纸质档案须保存六年，由档案专员在每季度最后一个工作日完成一次清点。",
+          "question": "银叶项目纸质档案需要保存多少年？",
+          "reference_answer": "纸质档案须保存六年哦。",
+          "answerable": true,
+          "keywords": [
+            "六年",
+            "保存"
+          ],
+          "prediction": "6年哦。",
+          "latency_seconds": 0.2575827999971807,
+          "input_tokens": 165,
+          "output_tokens": 5,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.30769230769230765,
+            "rouge_l": 0.30769230769230765,
+            "keyword_recall": 0.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_008",
+          "context": "《银叶档案保管办法》第7条：银叶项目的纸质档案须保存六年，由档案专员在每季度最后一个工作日完成一次清点。",
+          "question": "银叶纸质档案应使用什么颜色的文件盒保存？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 0.9835882000043057,
+          "input_tokens": 168,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_compound_003",
+          "context": "《银叶档案保管办法》第7条：银叶项目的纸质档案须保存六年，由档案专员在每季度最后一个工作日完成一次清点。",
+          "question": "银叶档案的保存期限多长，由谁在什么时间清点？",
+          "reference_answer": "须保存六年，由档案专员在每季度最后一个工作日进行清点哦。",
+          "answerable": true,
+          "keywords": [
+            "六年",
+            "档案专员",
+            "每季度最后一个工作日"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0056781000021147,
+          "input_tokens": 172,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.10344827586206896,
+            "rouge_l": 0.10344827586206896,
+            "keyword_recall": 0.0,
+            "is_refusal": true,
+            "refusal_is_correct": false
+          }
+        },
+        {
+          "id": "gen_answerable_009",
+          "context": "《北辰远程办公指引》第3条：申请下周远程办公须在本周五16:00前提交，由部门总监审批；远程办公结束后的下一个工作日须提交工作报告。",
+          "question": "下周远程办公申请最晚应在什么时候提交？",
+          "reference_answer": "最晚应在本周五16:00前提交哦。",
+          "answerable": true,
+          "keywords": [
+            "本周五",
+            "16:00前"
+          ],
+          "prediction": "本周五16:00前提交，由部门总监审批，远程办公结束后需在下一个工作日提交工作报告哦。",
+          "latency_seconds": 1.3836607999983244,
+          "input_tokens": 174,
+          "output_tokens": 28,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.4444444444444444,
+            "rouge_l": 0.4074074074074074,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_009",
+          "context": "《北辰远程办公指引》第3条：申请下周远程办公须在本周五16:00前提交，由部门总监审批；远程办公结束后的下一个工作日须提交工作报告。",
+          "question": "远程办公期间公司每天补贴多少网络费用？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0065867999946931,
+          "input_tokens": 174,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_compound_004",
+          "context": "《北辰远程办公指引》第3条：申请下周远程办公须在本周五16:00前提交，由部门总监审批；远程办公结束后的下一个工作日须提交工作报告。",
+          "question": "远程办公申请何时截止、由谁审批，结束后什么时候交报告？",
+          "reference_answer": "申请须在本周五16:00前提交，由部门总监审批；结束后的下一个工作日须提交工作报告哦。",
+          "answerable": true,
+          "keywords": [
+            "本周五16:00前",
+            "部门总监",
+            "下一个工作日",
+            "工作报告"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 0.9669568999961484,
+          "input_tokens": 179,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.14084507042253522,
+            "rouge_l": 0.11267605633802817,
+            "keyword_recall": 0.0,
+            "is_refusal": true,
+            "refusal_is_correct": false
+          }
+        },
+        {
+          "id": "gen_answerable_010",
+          "context": "《青禾耗材领取规则》第9条：带有青禾标识的耗材每周二由仓库管理员发放，每个项目组单次最多领取二十件，领取人须在电子台账中签收。",
+          "question": "带青禾标识的耗材由谁负责发放？",
+          "reference_answer": "由仓库管理员负责发放哦。",
+          "answerable": true,
+          "keywords": [
+            "仓库管理员",
+            "发放"
+          ],
+          "prediction": "仓库管理员每周二负责发放带有青禾标识的耗材，领取人需在电子台账上签收哦。",
+          "latency_seconds": 1.2823410999990301,
+          "input_tokens": 179,
+          "output_tokens": 26,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.4444444444444445,
+            "rouge_l": 0.4444444444444445,
+            "keyword_recall": 1.0,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_missing_010",
+          "context": "《青禾耗材领取规则》第9条：带有青禾标识的耗材每周二由仓库管理员发放，每个项目组单次最多领取二十件，领取人须在电子台账中签收。",
+          "question": "青禾耗材用完以后应投放到哪一种垃圾桶？",
+          "reference_answer": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "answerable": false,
+          "keywords": [
+            "现有制度资料",
+            "没有找到",
+            "相关规定"
+          ],
+          "prediction": "抱歉呀，现有制度资料中没有找到相关规定，建议向相关管理部门确认一下哦。",
+          "latency_seconds": 1.0038235999963945,
+          "input_tokens": 181,
+          "output_tokens": 20,
+          "metrics": {
+            "exact_match": 1.0,
+            "character_f1": 1.0,
+            "rouge_l": 1.0,
+            "keyword_recall": 1.0,
+            "is_refusal": true,
+            "refusal_is_correct": true
+          }
+        },
+        {
+          "id": "gen_compound_005",
+          "context": "《青禾耗材领取规则》第9条：带有青禾标识的耗材每周二由仓库管理员发放，每个项目组单次最多领取二十件，领取人须在电子台账中签收。",
+          "question": "青禾耗材何时由谁发放，每组单次最多领多少，领取后还要做什么？",
+          "reference_answer": "每周二由仓库管理员发放，每个项目组单次最多领取二十件，领取后须在电子台账中签收哦。",
+          "answerable": true,
+          "keywords": [
+            "每周二",
+            "仓库管理员",
+            "二十件",
+            "电子台账",
+            "签收"
+          ],
+          "prediction": "由仓库管理员周二发放，单次最多领二十件，需在台账上签收哦。",
+          "latency_seconds": 1.083035399991786,
+          "input_tokens": 189,
+          "output_tokens": 22,
+          "metrics": {
+            "exact_match": 0.0,
+            "character_f1": 0.7499999999999999,
+            "rouge_l": 0.6875,
+            "keyword_recall": 0.6,
+            "is_refusal": false,
+            "refusal_is_correct": true
+          }
+        }
+      ]
+    }
+  ]
+}

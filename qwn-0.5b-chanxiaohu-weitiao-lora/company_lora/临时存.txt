@@ -13,9 +13,9 @@
   Set-Location "D:\ai\AI_STUDY\qwn-0.5b-chanxiaohu-weitiao-lora\company_lora"
 
   python .\infer_lora.py `
-    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-19" `
-    --context "《卫生规范》第4项：办公区域内严禁吸烟。" `
-    --question "有人想在工位旁抽烟，可以吗？" `
+    --checkpoint ".\output\company-qwen-lora-v2\checkpoint-348" `
+    --context "请假需提前2天申请；误餐补贴30元" `
+    --question "请假需要提前30天吗？" `
     --device auto
 
   进入交互模式，并固定一段制度资料：
